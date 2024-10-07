@@ -24,17 +24,30 @@ const rawVideoBucket = 'my-yt-clone-raw';
 const processedVideoBucket = 'my-yt-clone-processed'
 
 export function convertVideoSize(rawVideoName: string, processedVideoName: string){
-
-    ffmpeg(rawVideoName)    
-    .outputOptions('-vf', 'scale=-1:360') // 360p
-    .on('end', ()=>{
-        console.log('Processing finished successfully');
-        return true;
+    return new Promise<void>((resolve, reject)=>{
+        ffmpeg(rawVideoName)    
+        .outputOptions('-vf', 'scale=-1:360') // 360p
+        .on('end', ()=>{
+            console.log('Processing finished successfully');
+            resolve();
+        })
+        .on('error', (err: Error)=>{
+            console.log(`Error occured: ${err}`)
+            reject(err);
+        })
+        .save(processedVideoName)   
     })
-    .on('error', (err: any)=>{
-        console.log(`Error occured: ${err}`)
-        return false;
-    })
-    .save(processedVideoName)
+}
 
+async function downloadFromGCS(fileName: string){
+    const options = {
+        destination: `${rawVideoLocalPath}/${fileName}`,
+      };
+    
+      // Downloads the file
+      await storage.bucket(rawVideoBucket).file(fileName).download(options);
+    
+      console.log(
+        `gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`
+      );
 }
