@@ -19,7 +19,7 @@ app.post('/process-video', async (req: any, res: any) => {
 
     console.log('started converting vids')
 
-    convertVideoSize(inputFilePath, outputFilePath).then(()=>{
+    await convertVideoSize(inputFilePath, outputFilePath).then(()=>{
         console.log('Processing finished successfully')
         return res.status(200).send(`Processing finished successfully`)
     }).catch((err)=>{
@@ -29,25 +29,6 @@ app.post('/process-video', async (req: any, res: any) => {
 
 
     console.log('finsihed converting vids')
-
-    // try{
-    //     await convertVideoSize(inputFilePath, outputFilePath)
-    // } catch{
-
-    // }
-    // console.log(boolRes)
-    // return res.status(400).send(`ConvertVideoSize() Invoked with a result of ${boolRes}`)
-    // ffmpeg(inputFilePath)    
-    //     .outputOptions('-vf', 'scale=-1:360') // 360p
-    //     .on('end', ()=>{
-    //         console.log('Processing finished successfully');
-    //         return res.status(200).send('Processing finished successfully');    
-    //     })
-    //     .on('error', (err: any)=>{
-    //         console.log(`Error occured: ${err}`)
-    //         return res.status(500).send('Server error');    
-    //     })
-    //     .save(outputFilePath)
 
 });
 

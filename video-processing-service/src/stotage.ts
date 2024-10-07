@@ -51,3 +51,4 @@ async function downloadFromGCS(fileName: string){
         `gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`
       );
 }
+
