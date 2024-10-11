@@ -1,6 +1,8 @@
 import { Storage } from "@google-cloud/storage";
 import fs from 'fs';
 import ffmpeg from "fluent-ffmpeg";
+import { resolve } from "path";
+import { rejects } from "assert";
 
 /**
  * 
@@ -8,9 +10,9 @@ import ffmpeg from "fluent-ffmpeg";
 A user uploads a video to Google Cloud Storage
 
 The video processing service will be notified of the upload via Cloud Pub/Sub
-The video processing service will download the video from Google Cloud Storage
-The video processing service will process the video
-The video processing service will upload the processed video to Google Cloud Storage
+The video processing service will download the video from Google Cloud Storage (DONE)
+The video processing service will process the video (DONE)
+The video processing service will upload the processed video to Google Cloud Storage (DONE)
 
 user -> gcs -> local server -> process -> local server -> gcs 
  */
@@ -39,16 +41,64 @@ export function convertVideoSize(rawVideoName: string, processedVideoName: strin
     })
 }
 
-async function downloadFromGCS(fileName: string){
+async function downloadFromGCS(fileName: string) {
     const options = {
         destination: `${rawVideoLocalPath}/${fileName}`,
-      };
-    
-      // Downloads the file
-      await storage.bucket(rawVideoBucket).file(fileName).download(options);
-    
-      console.log(
-        `gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`
-      );
+    };
+
+    // Downloads the file
+    await storage.bucket(rawVideoBucket).file(fileName).download(options);
+
+    console.log(
+    `gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`
+    );
+}
+
+
+async function uploadProcessedVideoToGCS(processedVideoPath: string){
+    const bucket = storage.bucket(processedVideoBucket);
+
+    await storage.bucket(processedVideoBucket).upload(`${processedVideoBucket}/${processedVideoPath}`, {
+            destination: processedVideoPath});
+
+    console.log(`${processedVideoLocalPath}/${processedVideoPath} uploaded to gs://${processedVideoBucket}/${processedVideoPath}.`);
+        
+    bucket.file(processedVideoPath).makePublic();
+}
+
+export function setupDirectory(){
+    ensureDirectoryExistance(rawVideoLocalPath);
+    ensureDirectoryExistance(processedVideoLocalPath);
+}
+
+function ensureDirectoryExistance(path: string) {
+    if(!fs.existsSync(path)){
+        fs.mkdirSync(path, {recursive: true});
+        console.log(`Directory created at ${path}`);
+    }
+}
+
+// delete files from the file system
+
+function deleteFile(filePath: string){
+    return new Promise<void>((resolve, reject) => {
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error('Error deleting file:', err);
+                reject();
+            } else {
+                console.log('File deleted successfully.');
+                resolve();
+            }
+        });
+    })
+}
+
+export function deleteRawVideo(filePath: string){
+    return deleteFile(filePath);
+}
+
+export function deleteProcessedVideo(filePath: string){
+    return deleteFile(filePath);
 }
 
