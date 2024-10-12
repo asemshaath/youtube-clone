@@ -1,25 +1,19 @@
 import express from 'express';
-import ffmpeg from 'fluent-ffmpeg';
-import { convertVideoSize, setupDirectory} from './stotage';
+import { 
+    convertVideoSize, 
+    setupDirectory, 
+    downloadFromGCS, 
+    uploadProcessedVideoToGCS,
+    deleteRawVideo,
+    deleteProcessedVideo
+} from './stotage';
 
 setupDirectory();
 
 const app = express();
-// const port = 3000;
 app.use(express.json())
 
-//req: express.Request, res: express.Response
 app.post('/process-video', async (req: any, res: any) => {
-
-    // const inputFilePath = req.body.inputFilePath;
-    // const outputFilePath = req.body.outputFilePath;
-
-    // if (!inputFilePath || !outputFilePath){
-    //     console.log('files dne')
-    //     return res.status(400).send('Bad Request: Path is missing');
-    // }
-
-    // console.log('started converting vids')
 
     if (!req.body) {
         const msg = 'no Pub/Sub message received';
@@ -47,19 +41,33 @@ app.post('/process-video', async (req: any, res: any) => {
         console.error(error);
         return res.status(400).send('Bad Request: missing filename.');    
     }
-  
-    res.status(200).send();
-    
 
-    // we need this:
-    // await convertVideoSize(inputFilePath, outputFilePath).then(()=>{
-    //     console.log('Processing finished successfully')
-    //     return res.status(200).send(`Processing finished successfully`)
-    // }).catch((err)=>{
-    //     console.log('Server error')
-    //     return res.status(500).send(`Server error: ${err}`);    
-    // })
+    const inputFilePath = data.name;
+    const outputFilePath = `processed-${inputFilePath}`;
 
+    await downloadFromGCS(inputFilePath);
+
+    await convertVideoSize(inputFilePath, outputFilePath).then(()=>{
+        console.log('Processing finished successfully')
+        return res.status(200).send(`Processing finished successfully`)
+    }).catch(async (err)=>{
+        console.log('Server error')
+        await Promise.all([
+            deleteRawVideo(inputFilePath),
+            deleteProcessedVideo(outputFilePath)
+        ]);
+        
+        return res.status(500).send(`Server error: ${err}`);    
+    });   
+
+    await uploadProcessedVideoToGCS(outputFilePath);
+
+    await Promise.all([
+        deleteRawVideo(inputFilePath),
+        deleteProcessedVideo(outputFilePath)
+    ]);
+
+    return res.status(200).send();
 });
 
 

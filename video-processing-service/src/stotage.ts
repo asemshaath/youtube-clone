@@ -41,7 +41,7 @@ export function convertVideoSize(rawVideoName: string, processedVideoName: strin
     })
 }
 
-async function downloadFromGCS(fileName: string) {
+export async function downloadFromGCS(fileName: string) {
     const options = {
         destination: `${rawVideoLocalPath}/${fileName}`,
     };
@@ -55,7 +55,7 @@ async function downloadFromGCS(fileName: string) {
 }
 
 
-async function uploadProcessedVideoToGCS(processedVideoPath: string){
+export async function uploadProcessedVideoToGCS(processedVideoPath: string){
     const bucket = storage.bucket(processedVideoBucket);
 
     await storage.bucket(processedVideoBucket).upload(`${processedVideoBucket}/${processedVideoPath}`, {
