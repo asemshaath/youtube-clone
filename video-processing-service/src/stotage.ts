@@ -22,8 +22,8 @@ const storage = new Storage();
 const rawVideoLocalPath = './raw-videos';
 const processedVideoLocalPath = './processed-videos';
 
-const rawVideoBucket = 'my-yt-clone-raw';
-const processedVideoBucket = 'my-yt-clone-processed'
+const rawVideoBucket = 'asem-raw-yt-vids';
+const processedVideoBucket = 'asem-processed-yt-vids'
 
 export function convertVideoSize(rawVideoName: string, processedVideoName: string){
     return new Promise<void>((resolve, reject)=>{
