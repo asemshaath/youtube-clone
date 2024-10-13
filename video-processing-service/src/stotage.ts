@@ -15,6 +15,11 @@ The video processing service will process the video (DONE)
 The video processing service will upload the processed video to Google Cloud Storage (DONE)
 
 user -> gcs -> local server -> process -> local server -> gcs 
+
+
+
+
+DONE
  */
 
 const storage = new Storage();
