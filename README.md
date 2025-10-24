@@ -1,2 +1,2 @@
 # YouTube Clone
-## Tech stack: typescript - express.js - gcp - next - docker - fmpeg
+Tech stack: typescript, express.js, gcp, next, docker, fmpeg
