@@ -62,7 +62,7 @@ export async function downloadFromGCS(fileName: string) {
 export async function uploadProcessedVideoToGCS(processedVideoPath: string){
     const bucket = storage.bucket(processedVideoBucket);
 
-    await storage.bucket(processedVideoBucket).upload(`${processedVideoBucket}/${processedVideoPath}`, {
+    await storage.bucket(processedVideoBucket).upload(`${processedVideoLocalPath}/${processedVideoPath}`, {
             destination: processedVideoPath});
 
     console.log(`${processedVideoLocalPath}/${processedVideoPath} uploaded to gs://${processedVideoBucket}/${processedVideoPath}.`);
