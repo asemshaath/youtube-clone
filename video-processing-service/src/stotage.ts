@@ -50,7 +50,8 @@ export async function downloadFromGCS(fileName: string) {
     const options = {
         destination: `${rawVideoLocalPath}/${fileName}`,
     };
-
+    console.debug(`DEBUG: Downloading gs://${rawVideoBucket}/${fileName} to ${options.destination} .......`);
+    
     // Downloads the file
     await storage.bucket(rawVideoBucket).file(fileName).download(options);
 

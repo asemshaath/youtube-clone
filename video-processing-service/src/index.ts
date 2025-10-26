@@ -46,12 +46,12 @@ app.post('/process-video', async (req: any, res: any) => {
         return res.status(400).send('Bad Request: missing filename.');    
     }
 
-    const inputFilePath = data.name;
-    const outputFilePath = `processed-${inputFilePath}`;
+    const inputFileName = data.name;
+    const outputFileName = `processed-${inputFileName}`;
 
-    await downloadFromGCS(inputFilePath);
+    await downloadFromGCS(inputFileName);
 
-    await convertVideoSize(inputFilePath, outputFilePath).then(()=>{
+    await convertVideoSize(inputFileName, outputFileName).then(()=>{
         console.log('Processing finished successfully')
         return res.status(200).send(`Processing finished successfully`)
     }).catch(async (err)=>{
@@ -61,18 +61,18 @@ app.post('/process-video', async (req: any, res: any) => {
 
 
         await Promise.all([
-            deleteRawVideo(inputFilePath),
-            deleteProcessedVideo(outputFilePath)
+            deleteRawVideo(inputFileName),
+            deleteProcessedVideo(outputFileName)
         ]);
         
         return res.status(500).send(`Server error: ${err}`);    
     });   
 
-    await uploadProcessedVideoToGCS(outputFilePath);
+    await uploadProcessedVideoToGCS(outputFileName);
 
     await Promise.all([
-        deleteRawVideo(inputFilePath),
-        deleteProcessedVideo(outputFilePath)
+        deleteRawVideo(inputFileName),
+        deleteProcessedVideo(outputFileName)
     ]);
 
     return res.status(200).send();
