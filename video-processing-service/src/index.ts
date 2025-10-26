@@ -60,6 +60,7 @@ app.post('/process-video', async (req: any, res: any) => {
         return res.status(200).send(`Processing finished successfully`)
     }).catch(async (err)=>{
         console.log('Server error')
+        console.error("Faild to process video:")
         console.log(err)
         console.log('DEBUG: Deleting local files due to error')
 
