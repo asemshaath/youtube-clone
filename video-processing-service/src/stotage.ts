@@ -56,6 +56,8 @@ export async function downloadFromGCS(fileName: string) {
     // Downloads the file
     await storage.bucket(rawVideoBucket).file(fileName).download(options);
     listFilesInBucket(rawVideoBucket);
+    listFilesInDir(rawVideoLocalPath);
+    
     console.debug("DEBUG 2 typeof options:", typeof options, "keys:", Object.keys(options));
 
     console.log(`gs://${rawVideoBucket}/${fileName} downloaded to ${rawVideoLocalPath}/${fileName}`);
@@ -120,5 +122,18 @@ export async function listFilesInBucket(bucketName: string){
         });
     }).catch((err)=>{
         console.error('Error listing files:', err);
+    });
+}
+
+export function listFilesInDir(dirPath: string){
+    fs.readdir(dirPath, (err, files) => {
+        if (err) {
+            console.error('Error reading directory:', err);
+            return;
+        }
+        console.log(`Files in directory ${dirPath}:`);
+        files.forEach(file => {
+            console.log(file);
+        });
     });
 }
