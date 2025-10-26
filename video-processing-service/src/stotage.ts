@@ -3,6 +3,7 @@ import fs from 'fs';
 import ffmpeg from "fluent-ffmpeg";
 import { resolve } from "path";
 import { rejects } from "assert";
+import path from "path";
 
 /**
  * 
@@ -24,8 +25,8 @@ DONE
 
 const storage = new Storage();
 
-const rawVideoLocalPath = './raw-videos';
-const processedVideoLocalPath = './processed-videos';
+const rawVideoLocalPath = path.join(process.cwd(), "raw-videos");
+const processedVideoLocalPath = path.join(process.cwd(), "processed-videos");
 
 const rawVideoBucket = 'asem-raw-yt-vids';
 const processedVideoBucket = 'asem-processed-yt-vids'
