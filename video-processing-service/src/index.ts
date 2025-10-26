@@ -49,7 +49,11 @@ app.post('/process-video', async (req: any, res: any) => {
     const inputFileName = data.name;
     const outputFileName = `processed-${inputFileName}`;
 
-    await downloadFromGCS(inputFileName);
+    await downloadFromGCS(inputFileName).catch((err)=>{
+        console.log('Server error during download')
+        console.log(err)
+        return res.status(500).send(`Server error during download: ${err}`);
+    });
 
     await convertVideoSize(inputFileName, outputFileName).then(()=>{
         console.log('Processing finished successfully')
