@@ -55,6 +55,7 @@ export async function downloadFromGCS(fileName: string) {
     
     // Downloads the file
     await storage.bucket(rawVideoBucket).file(fileName).download(options);
+    console.debug("DEBUG 2 typeof options:", typeof options, "keys:", Object.keys(options));
 
     console.log(`gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`);
 }
