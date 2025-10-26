@@ -15,6 +15,9 @@ app.use(express.json())
 
 app.post('/process-video', async (req: any, res: any) => {
 
+    console.debug('DEBUG: Received request to process video');
+    console.debug(`DEBUG: Request body: ${JSON.stringify(req.body)}`);
+    
     if (!req.body) {
         const msg = 'no Pub/Sub message received';
         console.error(`error: ${msg}`);
@@ -31,6 +34,7 @@ app.post('/process-video', async (req: any, res: any) => {
 
     // const pubSubMessage = req.body.message;
     const pubSubMessage = Buffer.from(req.body.message.data, 'base64').toString()
+    console.debug(`DEBUG: Pub/Sub message data: ${pubSubMessage}`);   
     let data = JSON.parse(pubSubMessage)
 
     try {
@@ -52,6 +56,10 @@ app.post('/process-video', async (req: any, res: any) => {
         return res.status(200).send(`Processing finished successfully`)
     }).catch(async (err)=>{
         console.log('Server error')
+        console.log(err)
+        console.log('DEBUG: Deleting local files due to error')
+
+
         await Promise.all([
             deleteRawVideo(inputFilePath),
             deleteProcessedVideo(outputFilePath)

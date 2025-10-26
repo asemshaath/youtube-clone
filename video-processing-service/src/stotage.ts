@@ -42,7 +42,7 @@ export function convertVideoSize(rawVideoName: string, processedVideoName: strin
             console.log(`Error occured: ${err}`)
             reject(err);
         })
-        .save(processedVideoName)   
+        .save(`${processedVideoLocalPath}/${processedVideoName}`)   
     })
 }
 
