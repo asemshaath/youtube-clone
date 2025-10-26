@@ -32,7 +32,7 @@ const processedVideoBucket = 'asem-processed-yt-vids'
 
 export function convertVideoSize(rawVideoName: string, processedVideoName: string){
     return new Promise<void>((resolve, reject)=>{
-        ffmpeg(rawVideoName)    
+        ffmpeg(`${rawVideoLocalPath}/${rawVideoName}`)    
         .outputOptions('-vf', 'scale=-1:360') // 360p
         .on('end', ()=>{
             console.log('Processing finished successfully');
@@ -54,9 +54,7 @@ export async function downloadFromGCS(fileName: string) {
     // Downloads the file
     await storage.bucket(rawVideoBucket).file(fileName).download(options);
 
-    console.log(
-    `gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`
-    );
+    console.log(`gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`);
 }
 
 
