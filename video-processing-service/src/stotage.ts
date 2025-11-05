@@ -3,6 +3,7 @@ import fs from 'fs';
 import ffmpeg from "fluent-ffmpeg";
 import { resolve } from "path";
 import { rejects } from "assert";
+import path from "path";
 
 /**
  * 
@@ -24,15 +25,20 @@ DONE
 
 const storage = new Storage();
 
-const rawVideoLocalPath = './raw-videos';
-const processedVideoLocalPath = './processed-videos';
+const rawVideoLocalPath = path.join(process.cwd(), "raw-videos");
+const processedVideoLocalPath = path.join(process.cwd(), "processed-videos");
 
 const rawVideoBucket = 'asem-raw-yt-vids';
 const processedVideoBucket = 'asem-processed-yt-vids'
 
 export function convertVideoSize(rawVideoName: string, processedVideoName: string){
+    const full_path = path.join(rawVideoLocalPath, rawVideoName);
+    const output_path = path.join(processedVideoLocalPath, processedVideoName);
+    
+    console.log(`Starting processing video ${full_path} to ${output_path} .......`);
+
     return new Promise<void>((resolve, reject)=>{
-        ffmpeg(rawVideoName)    
+        ffmpeg(full_path)    
         .outputOptions('-vf', 'scale=-1:360') // 360p
         .on('end', ()=>{
             console.log('Processing finished successfully');
@@ -42,33 +48,38 @@ export function convertVideoSize(rawVideoName: string, processedVideoName: strin
             console.log(`Error occured: ${err}`)
             reject(err);
         })
-        .save(processedVideoName)   
+        .save(output_path);   
     })
 }
 
 export async function downloadFromGCS(fileName: string) {
+    const fullLocalPath = path.join(rawVideoLocalPath, fileName);
     const options = {
-        destination: `${rawVideoLocalPath}/${fileName}`,
+        destination: fullLocalPath,
     };
-
+    console.debug(`DEBUG: Downloading gs://${rawVideoBucket}/${fileName} to ${fullLocalPath} .......`);
+    
     // Downloads the file
     await storage.bucket(rawVideoBucket).file(fileName).download(options);
+    await listFilesInBucket(rawVideoBucket);
+    listFilesInDir(rawVideoLocalPath);
 
-    console.log(
-    `gs://${rawVideoBucket}/${fileName} downloaded to ${options.destination}`
-    );
+    console.debug("DEBUG 2 typeof options:", typeof options, "keys:", Object.keys(options));
+
+    console.log(`gs://${rawVideoBucket}/${fileName} downloaded to ${fullLocalPath}`);
 }
 
 
-export async function uploadProcessedVideoToGCS(processedVideoPath: string){
+export async function uploadProcessedVideoToGCS(processedVideoName: string){
+    const full_path = path.join(processedVideoLocalPath, processedVideoName);
+    
     const bucket = storage.bucket(processedVideoBucket);
 
-    await storage.bucket(processedVideoBucket).upload(`${processedVideoBucket}/${processedVideoPath}`, {
-            destination: processedVideoPath});
+    await storage.bucket(processedVideoBucket).upload(full_path, {destination: processedVideoName});
 
-    console.log(`${processedVideoLocalPath}/${processedVideoPath} uploaded to gs://${processedVideoBucket}/${processedVideoPath}.`);
+    console.log(`${full_path} uploaded to gs://${processedVideoBucket}/${processedVideoName}.`);
         
-    bucket.file(processedVideoPath).makePublic();
+    bucket.file(processedVideoName).makePublic();
 }
 
 export function setupDirectory(){
@@ -99,11 +110,39 @@ function deleteFile(filePath: string){
     })
 }
 
-export function deleteRawVideo(filePath: string){
+export function deleteRawVideo(rawVideoName: string){
+    const filePath = path.join(rawVideoLocalPath, rawVideoName);
     return deleteFile(filePath);
 }
 
-export function deleteProcessedVideo(filePath: string){
+export function deleteProcessedVideo(processedVideoName: string){
+    const filePath = path.join(processedVideoLocalPath, processedVideoName);
     return deleteFile(filePath);
 }
 
+
+
+export async function listFilesInBucket(bucketName: string){
+    return storage.bucket(bucketName).getFiles().then((data)=>{
+        const files = data[0];
+        console.log(`Files in bucket ${bucketName}:`);
+        files.forEach(file => {
+            console.log(file.name);
+        });
+    }).catch((err)=>{
+        console.error('Error listing files:', err);
+    });
+}
+
+export function listFilesInDir(dirPath: string){
+    fs.readdir(dirPath, (err, files) => {
+        if (err) {
+            console.error('Error reading directory:', err);
+            return;
+        }
+        console.log(`Files in directory ${dirPath}:`);
+        files.forEach(file => {
+            console.log(file);
+        });
+    });
+}
